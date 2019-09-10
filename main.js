@@ -9,6 +9,9 @@ let canvas,
 var porcupine = new Image();
 porcupine.src = "porcupine.png";
 
+var bush = new Image();
+bush.src = "bush.png";
+
 canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -45,14 +48,14 @@ class Player{
     draw(){
         //we need to draw player stats
         ctx.font = "30px Arial";
-        ctx.fillText("Health: " + this.health, 10, 50); 
-        ctx.fillText("Hunger: " + this.hunger, 10, 100); 
+        ctx.fillText("Health: " + this.health, 10, 50);
+        ctx.fillText("Hunger: " + this.hunger, 10, 100);
 
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.width, this.height);
         ctx.strokeStyle = 'red';
         ctx.stroke();
-        
+
 
         if(this.right){
             //context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
@@ -106,6 +109,12 @@ class Player{
     jump(){
         this.dy = -10;
         this.jumped = true;
+    }
+    fall(){
+      // can only fall when rising
+      if (this.dy < 0){
+        this.dy = this.dy * 0.2; // setting it to zero made it too...magentic
+      }
     }
 }
 
@@ -185,7 +194,7 @@ function hitEnemy(sq1, sq2){
         sq1.x < sq2.x + sq2.width &&//check square 1 left
         sq1.x + sq1.width > sq2.x){//check square 1 right
             console.log(sq2.dx);
-            
+
         return true;
    }
 }
@@ -206,7 +215,7 @@ function update(dt){
     for (let i = 0; i < foodArray.length; i++) {
         if(hitDot(player, foodArray[i])){
             foodArray.splice(i, 1);
-            player.hunger+=2;        
+            player.hunger+=2;
         }
     }
     for (let i = 0; i < enemyArray.length; i++) {
@@ -223,9 +232,8 @@ function render(){
     //draw foodarea
     ctx.closePath();
     ctx.beginPath();
-    ctx.rect(canvas.width/2, ground-100-ballRadius, canvas.width/4, 100+ballRadius*2);
-    ctx.fillStyle = 'green';
-    ctx.fill();
+    // using an image for the bush
+    ctx.drawImage(bush, canvas.width/2, ground-100-ballRadius, canvas.width/4, 100+ballRadius*2);
 
     //draw burrow
     ctx.closePath();
@@ -236,7 +244,7 @@ function render(){
 
     //draw player
     player.draw();
-    
+
     //draw food
     for (let i = 0; i < foodArray.length; i++) {
         foodArray[i].draw();
@@ -276,7 +284,7 @@ window.onload = function(){
     }, 500);
 
     setInterval(()=>{
-        //also add enemies, maybe a different interval        
+        //also add enemies, maybe a different interval
         //we need to check where the player is
         //get random position for either side of the screen
         if(enemyArray.length < 2){
@@ -284,7 +292,7 @@ window.onload = function(){
                 enemyArray.push(new Enemy(randomInt(leftBounds, 0), 5));
             }else{
                 console.log('in this');
-                
+
                 enemyArray.push(new Enemy(randomInt(canvas.width, rightBounds), -5));
             }
         }
@@ -314,6 +322,9 @@ document.addEventListener('keyup', (e)=>{
     }
     if(e.keyCode == 37){//left
         player.moveLeft= false;
+    }
+    if(e.keyCode == 38){//up
+      player.fall();
     }
 });
 
