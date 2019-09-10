@@ -192,11 +192,13 @@ function hitEnemy(sq1, sq2){
     if(sq1.y < sq2.y + sq2.height &&//check square 1 top
         sq1.y + sq1.height > sq2.y&&//check square 1 bottom
         sq1.x < sq2.x + sq2.width &&//check square 1 left
-        sq1.x + sq1.width > sq2.x){//check square 1 right
-            console.log(sq2.dx);
-
+        sq1.x + sq1.width > sq2.x)
+    {//check square 1 right
+        if(sq2.dx > 0 && sq1.right != true || sq2.dx < 0 && sq1.left != true){
+            player.health--;
+        }
         return true;
-   }
+    }
 }
 
 function update(dt){
@@ -220,7 +222,8 @@ function update(dt){
     }
     for (let i = 0; i < enemyArray.length; i++) {
         enemyArray[i].update();
-        //check if hit enemy
+
+        //if enemy is out of bounds
         if(hitEnemy(player, enemyArray[i]) || enemyArray[i].x > rightBounds || enemyArray[i].x < leftBounds){
             enemyArray.splice(i, 1);
         }

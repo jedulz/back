@@ -9,7 +9,7 @@ body,html{
 canvas{
     touch-action: none;
     /* display:none; */
-    background-color:#ddd;
+    background-color:#7EC0EE;
 }
 #start_screen{
     background-color: #eee;
