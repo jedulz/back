@@ -24,6 +24,12 @@ const bearSpeed = 5;
 const leftBounds = -1000;
 const rightBounds = canvas.width + 1000;
 const ballRadius = 10;
+const burrowOpening = {
+    x: 100,
+    y: ground,
+    width: 100,
+    height: 40
+}
 
 
 
@@ -48,8 +54,17 @@ class Player{
     draw(){
         //we need to draw player stats
         ctx.font = "30px Arial";
-        ctx.fillText("Health: " + this.health, 10, 50);
-        ctx.fillText("Hunger: " + this.hunger, 10, 100);
+        
+        let hearts = '';
+        let grapes = '';
+        for(let i = 0; i < this.health; i++){
+            hearts += '❤️';
+        }        
+        for(let i = 0; i < this.hunger/10; i++){
+            grapes += '🍓';
+        }
+        ctx.fillText(hearts, 10, 50);
+        ctx.fillText(grapes, 10, 100);
 
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.width, this.height);
@@ -121,7 +136,7 @@ class Player{
 class Enemy{
     constructor(x, dx){
         this.width = 100;
-        this.height = 100;
+        this.height = 200;
         this.x = x;
         this.y = ground - this.height;
         this.dx = dx;
@@ -148,21 +163,26 @@ class Food{
         this.radius = radius;
     }
     draw(){
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = 'purple';
-        ctx.fill();
+        // ctx.beginPath();
+        // ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        // ctx.fillStyle = 'purple';
+        // ctx.fill();
+        ctx.fillText('🍓', this.x, this.y);
     }
 }
 
 class Family{
     constructor(){
-        this.width = 20;
-        this.height = 20;
+        this.width = 50;
+        this.height = 50;
+        this.dx = 0;
+        this.dy = 0;
         this.x = canvas.width/1.2;
-        this.y = canvas.height - 40;
+        this.y = canvas.height - this.height*2;
         this.hunger = 100;
         this.health = 1;
+        this.right = true;
+        this.left = false;
     }
 
     draw(){
@@ -170,6 +190,30 @@ class Family{
         ctx.rect(this.x, this.y, this.width, this.height);
         ctx.fillStyle = 'green';
         ctx.fill();
+        if(this.right){
+            ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
+        }
+        else if(this.left){
+            ctx.drawImage(porcupine, 256, 0, 512, 256, this.x-this.width-10, this.y-this.height+5, this.width*6, this.height*3);
+        }
+    }
+
+    update(){
+        //move left to right
+        if(this.left){
+            this.dx = -3;
+        }else{
+            this.dx = 3;
+        }
+
+        if(this.x + this.width > canvas.width){
+            this.right = false;
+            this.left = true;
+        }else if(this.x < 30){
+            this.right = true;
+            this.left = false;
+        }
+        this.x += this.dx;
     }
 }
 
@@ -217,9 +261,15 @@ function update(dt){
     for (let i = 0; i < foodArray.length; i++) {
         if(hitDot(player, foodArray[i])){
             foodArray.splice(i, 1);
-            player.hunger+=2;
+            player.hunger+=10;
         }
     }
+
+    //draw family
+    for (let i = 0; i < familyArray.length; i++) {
+        familyArray[i].update();
+    }
+
     for (let i = 0; i < enemyArray.length; i++) {
         enemyArray[i].update();
 
@@ -228,6 +278,9 @@ function update(dt){
             enemyArray.splice(i, 1);
         }
     }
+
+    //check gameover state
+
 }
 
 function render(){
@@ -238,11 +291,25 @@ function render(){
     // using an image for the bush
     ctx.drawImage(bush, canvas.width/2, ground-100-ballRadius, canvas.width/4, 100+ballRadius*2);
 
-    //draw burrow
+    //draw ground
     ctx.closePath();
     ctx.beginPath();
     ctx.rect(0, ground, canvas.width, canvas.height);
     ctx.fillStyle = 'saddlebrown';
+    ctx.fill();
+
+    //draw burrow
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.rect(30, ground+30, canvas.width-30, canvas.height);
+    ctx.fillStyle = 'black';
+    ctx.fill();
+
+    //draw burrow opening
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.rect(burrowOpening.x, burrowOpening.y, burrowOpening.width, burrowOpening.height);
+    ctx.fillStyle = 'black';
     ctx.fill();
 
     //draw player
@@ -281,7 +348,7 @@ window.onload = function(){
     //since this is on load we only have one setinterval which makes this object creation not bad
     //maybe we use delta time in the update function to create these objects
     setInterval(()=>{
-        if(foodArray.length < 50){
+        if(foodArray.length < 5){
             foodArray.push(new Food(randomInt(canvas.width/2, canvas.width/1.35), randomInt(ground-100,ground-20), ballRadius));
         }
     }, 500);
