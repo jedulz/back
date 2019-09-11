@@ -113,12 +113,10 @@ class Player{
         if(this.jumped){
             this.y += this.dy;
         }
-        if(this.y + this.height > ground){
+        if(this.y + this.height > ground && !this.inBurrow){
             this.jumped = false;
             // to not get stuck in the ground
-            if(!this.inBurrow){
-                this.y = ground - this.height;
-            }
+            this.y = ground - this.height;
         }
         this.x += this.dx;
 
@@ -132,16 +130,22 @@ class Player{
 
         //check to see if in burrow
         if(this.inBurrow){
-            this.y += this.dy;
+            this.y = familyAttrs.y;
         }
     }
     jump(){
-        this.dy = -10;
-        this.jumped = true;
+        if(!this.inBurrow){
+            this.dy = -10;
+            this.jumped = true;
+        }else if(this.x > burrowOpening.x && this.x < burrowOpening.x + burrowOpening.width && this.inBurrow){
+            console.log('going to ground');
+            this.inBurrow = false;
+            this.y = ground;
+        }
     }
     fall(){
       // can only fall when rising
-      if (this.dy < 0){
+      if (this.dy < 0 && !this.inBurrow){
         this.dy = this.dy * 0.2; // setting it to zero made it too...magentic
       }
     }
@@ -149,16 +153,10 @@ class Player{
     moveDown(){
         //if over the burrow opening
         if(this.x > burrowOpening.x && this.x < burrowOpening.x + burrowOpening.width){
-            if(this.y + this.height > familyAttrs.y){
-                this.dy = 0;
-                alert();
-            }else{
-                this.dy += 3;
-            }
             this.inBurrow = true;
-            
         }
     }
+
 }
 
 class Enemy{
@@ -214,10 +212,10 @@ class Family{
     }
 
     draw(){
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.fillStyle = 'green';
-        ctx.fill();
+        // ctx.beginPath();
+        // ctx.rect(this.x, this.y, this.width, this.height);
+        // ctx.fillStyle = 'green';
+        // ctx.fill();
         if(this.right){
             ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
         }
