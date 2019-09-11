@@ -49,6 +49,7 @@ class Player{
         this.spikeSize = 30;
         this.health = 5;
         this.hunger = 100;
+        this.inBurrow = false;
     }
 
     draw(){
@@ -109,7 +110,9 @@ class Player{
         if(this.y + this.height > ground){
             this.jumped = false;
             // to not get stuck in the ground
-            this.y = ground - this.height;
+            if(!this.inBurrow){
+                this.y = ground - this.height;
+            }
         }
         this.x += this.dx;
 
@@ -119,6 +122,11 @@ class Player{
         }
         else if (this.x + this.width > canvas.width){
           this.x = canvas.width - this.width;
+        }
+
+        //check to see if in burrow
+        if(this.inBurrow){
+            this.y += this.dy;
         }
     }
     jump(){
@@ -130,6 +138,14 @@ class Player{
       if (this.dy < 0){
         this.dy = this.dy * 0.2; // setting it to zero made it too...magentic
       }
+    }
+
+    moveDown(){
+        //if over the burrow opening
+        if(this.x > burrowOpening.x && this.x < burrowOpening.x + burrowOpening.width){
+            this.inBurrow = true;
+            this.dy += 3;
+        }
     }
 }
 
@@ -384,6 +400,9 @@ document.addEventListener('keydown', (e)=>{
     }
     if(e.keyCode == 38 && player.jumped == false){//up
         player.jump();
+    }
+    if(e.keyCode == 40 && player.jumped == false){//up
+        player.moveDown();
     }
 });
 document.addEventListener('keyup', (e)=>{
