@@ -30,6 +30,12 @@ const burrowOpening = {
     width: 100,
     height: 40
 }
+const familyAttrs = {
+    width: 50,
+    height: 50,
+    x: canvas.width/1.2,
+    y: canvas.height - 50,
+};
 
 
 
@@ -143,8 +149,14 @@ class Player{
     moveDown(){
         //if over the burrow opening
         if(this.x > burrowOpening.x && this.x < burrowOpening.x + burrowOpening.width){
+            if(this.y + this.height > familyAttrs.y){
+                this.dy = 0;
+                alert();
+            }else{
+                this.dy += 3;
+            }
             this.inBurrow = true;
-            this.dy += 3;
+            
         }
     }
 }
@@ -189,12 +201,12 @@ class Food{
 
 class Family{
     constructor(){
-        this.width = 50;
-        this.height = 50;
+        this.width = familyAttrs.width;
+        this.height = familyAttrs.height;
         this.dx = 0;
         this.dy = 0;
         this.x = canvas.width/1.2;
-        this.y = canvas.height - this.height*2;
+        this.y = familyAttrs.y;
         this.hunger = 100;
         this.health = 1;
         this.right = true;
