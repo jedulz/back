@@ -7,8 +7,7 @@ let canvas,
     enemyArray = [],
     familyArray = [],
     lastUpdate = Date.now(),
-    continueAnimation = false,
-    stockPile;
+    continueAnimation = false;
 
 
 //sprites
@@ -18,12 +17,16 @@ porcupine.src = "porcupine.png";
 var bush = new Image();
 bush.src = "bush.png";
 
+<<<<<<< HEAD
 var bear = new Image();
 bear.src = "bear.png";
 
 var music = new Audio("music.mp3");
 music.play();
 
+=======
+//canvas intialization
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
 canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -182,13 +185,6 @@ class Enemy{
 
     update(){
         this.x += this.dx;
-
-        //increase speed in relation to how much food the player is holding
-        this.dx = 0;
-        for (let i = 0; i < player.hunger; i++) {
-            this.dx+=0.1;
-        }
-
         if(this.hunger != 0){
             for (let i = 0; i < foodArray.length; i++) {
                 if(hitDot(this, foodArray[i])){
@@ -207,7 +203,11 @@ class Food{
         this.radius = radius;
     }
     draw(){
+<<<<<<< HEAD
         ctx.fillText('🍓', this.x-this.radius, this.y+this.radius);
+=======
+        ctx.fillText('🍓', this.x, this.y);
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
     }
 }
 
@@ -219,7 +219,7 @@ class Family{
         this.width = familyAttrs.width;
         this.height = familyAttrs.height;
         this.dy = 0;
-        this.hunger = 10;
+        this.hunger = 100;
         this.health = 1;
         this.right = true;
         this.left = false;
@@ -229,7 +229,15 @@ class Family{
     }
 
     draw(){
+<<<<<<< HEAD
+        // ctx.beginPath();
+        // ctx.rect(this.x, this.y, this.width, this.height);
+        // ctx.fillStyle = 'green';
+        // ctx.fill();
         if(this.dx > 0){
+=======
+        if(this.right){
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
             ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
         }
         else{
@@ -237,7 +245,7 @@ class Family{
         }
         //draw hunger
         let berries = '';
-        for(let i = 0; i < this.hunger; i++){
+        for(let i = 0; i < this.hunger/10; i++){
             berries += '🍓';
         }
         ctx.font = "12px Arial";
@@ -247,55 +255,29 @@ class Family{
     }
 
     update(){
+<<<<<<< HEAD
         if(this.x + this.width > canvas.width || this.x < 30){
             this.dx *= -1;
+=======
+        //move left to right
+        if(this.left){
+            this.dx = -3;
+        }else{
+            this.dx = 3;
+        }
+        
+        //go back and forth in the burrow
+        if(this.x + this.width > canvas.width){
+            this.right = false;
+            this.left = true;
+        }else if(this.x < 30){
+            this.right = true;
+            this.left = false;
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
         }
 
         this.x += this.dx;
-        this.hunger -= 0.01;
-
-        //if the player hit the storage gives food
-        if(hitSquare(this, stockPile)){
-            stockPile.food--;
-            this.hunger++;
-            
-        }
-        if(this.x + this.width <= stockPile.x){
-            //take one away from stockpile
-            stockPile.food--;
-            this.hunger++;
-            //add one food
-
-        }
-    }
-}
-
-/*
-    Add a location to store the food
-*/
-class StockPile{
-    constructor(){
-        this.width = burrowOpening.width;
-        this.height = burrowOpening.height*3;
-        this.x = 30;
-        this.y = canvas.height-this.height;
-        this.food = 10;
-    }
-
-    draw(){
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.strokeStyle = 'grey';
-        ctx.stroke();
-        //draw the food
-        ctx.font = "30px Arial bold";
-        ctx.fillStyle = "white";
-        ctx.fillText('Storage:', this.x, this.y+20);
-        ctx.fillText('🍓 x' + this.food, this.x, this.y+this.height/2);
-    }
-
-    addFood(){
-
+        this.hunger -= 0.1;
     }
 }
 
@@ -327,16 +309,6 @@ function hitEnemy(sq1, sq2){
     }
 }
 
-function hitSquare(sq1, sq2){
-    if(sq1.y < sq2.y + sq2.height &&//check square 1 top
-        sq1.y + sq1.height > sq2.y&&//check square 1 bottom
-        sq1.x < sq2.x + sq2.width &&//check square 1 left
-        sq1.x + sq1.width > sq2.x)
-    {//check square 1 right
-        return true;
-    }
-}
-
 
 function update(dt){
 
@@ -363,6 +335,10 @@ function update(dt){
 
     //update family
     for (let i = 0; i < familyArray.length; i++) {
+        //check if player collides
+        // if( ){
+
+        // }
         familyArray[i].update();
         if(familyArray[i].hunger <= 0){
             gameover();
@@ -396,53 +372,50 @@ function render(){
        
     }else{
 
-        //draw foodarea
-        ctx.closePath();
-        ctx.beginPath();
-        // using an image for the bush
-        ctx.drawImage(bush, canvas.width/2, ground-100-ballRadius, canvas.width/4, 100+ballRadius*2);
+    //draw foodarea
+    ctx.closePath();
+    ctx.beginPath();
+    // using an image for the bush
+    ctx.drawImage(bush, canvas.width/2, ground-100-ballRadius, canvas.width/4, 100+ballRadius*2);
 
-        //draw ground
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.rect(0, ground, canvas.width, canvas.height);
-        ctx.fillStyle = 'saddlebrown';
-        ctx.fill();
+    //draw ground
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.rect(0, ground, canvas.width, canvas.height);
+    ctx.fillStyle = 'saddlebrown';
+    ctx.fill();
 
-        //draw burrow
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.rect(30, ground+30, canvas.width-30, canvas.height);
-        ctx.fillStyle = 'black';
-        ctx.fill();
+    //draw burrow
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.rect(30, ground+30, canvas.width-30, canvas.height);
+    ctx.fillStyle = 'black';
+    ctx.fill();
 
-        //draw burrow opening
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.rect(burrowOpening.x, burrowOpening.y, burrowOpening.width, burrowOpening.height);
-        ctx.fillStyle = 'black';
-        ctx.fill();
+    //draw burrow opening
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.rect(burrowOpening.x, burrowOpening.y, burrowOpening.width, burrowOpening.height);
+    ctx.fillStyle = 'black';
+    ctx.fill();
 
-        //draw player
-        player.draw();
+    //draw player
+    player.draw();
 
-        //draw food
-        for (let i = 0; i < foodArray.length; i++) {
-            foodArray[i].draw();
-        }
+    //draw food
+    for (let i = 0; i < foodArray.length; i++) {
+        foodArray[i].draw();
+    }
 
-        //draw enemies
-        for (let i = 0; i < enemyArray.length; i++) {
-            enemyArray[i].draw();
-        }
+    //draw enemies
+    for (let i = 0; i < enemyArray.length; i++) {
+        enemyArray[i].draw();
+    }
 
-        //draw family
-        for (let i = 0; i < familyArray.length; i++) {
-            familyArray[i].draw();
-        }
-
-        //draw stockpile
-        stockPile.draw();
+    //draw family
+    for (let i = 0; i < familyArray.length; i++) {
+        familyArray[i].draw();
+    }
     }
 }
 
@@ -499,13 +472,11 @@ function start(){
 
     familyArray.push(new Family(randomInt(30, canvas.width-10), familyAttrs.y, randomInt(-5,-3)));
     familyArray.push(new Family(randomInt(30, canvas.width-10), familyAttrs.y, randomInt(3,5))); 
-
-    //create stockpile obj on game start
-    stockPile = new StockPile();
-    
 }
 
 document.addEventListener('keydown', (e)=>{
+    console.log(e.keyCode);
+    
     if(e.keyCode == 39){//right
         player.moveRight = true;
         player.right = true;
@@ -522,7 +493,7 @@ document.addEventListener('keydown', (e)=>{
     if(e.keyCode == 40 && player.jumped == false){//down
         player.moveDown();
     }
-    if((e.keyCode == 32 || e.keyCode == 13) && gameStarted == false){
+    if(e.keyCode == 32 || e.keyCode == 13 && gameStarted == false){
         gameStarted = true;
         start();
     }
@@ -540,6 +511,7 @@ document.addEventListener('keyup', (e)=>{
     }
 });
 
+<<<<<<< HEAD
 document.getElementById('start_button').addEventListener('click', ()=>{
     if(gameStarted == false){
         gameStarted = true;
@@ -547,11 +519,33 @@ document.getElementById('start_button').addEventListener('click', ()=>{
     }
 });
 
-/* Slider info */
-var slider = document.getElementById("myRange");
-var output = document.getElementById("demo");
-output.innerHTML = slider.value;
 
-slider.oninput = function() {
-  output.innerHTML = this.value;
-}
+
+/*
+Thoughts on this game.
+
+What if made a game about a porcupine.
+
+I wanted my back game to be more intuitive with how it relates to the theme.
+
+
+
+
+//Ideas: In this game you move forward and have to turn around to take out your enemies
+//The enemies are things that want to eat you maybe?
+//Where are we going:
+//Searching for food and water, then trying to get back home.
+Randomly generate levels
+//Counter for how much food we need for the day. like 0/5 for the day
+//once you get enough food you wont be hungry tonight
+if you go to sleep with out food for the day you lose a heart?
+the goal is to get hearts and mature them find a mate?
+
+name for the game. maybe name based on the goal like:
+find your other half
+Maybe a character name
+
+
+*/
+=======
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2

@@ -8,8 +8,35 @@
     <body>
         <div id="start_screen">
             <div class="start-wrapper">
-                <h1>Bring Back the Berries</h1>
+                <h1 class="game-title">Bring Back the Berries</h1>
                 <input id="start_button" type="button" value="Start"/>
+                <br>
+                <br>
+                <div class="container">
+                    <h2>Use Arrow Keys to Move</h2>
+                </div>
+                <br>
+                <br>
+                <br>
+                <div class="controls">
+                    Difficulty: 
+                    <select name="" id="">
+                        <option value="" disabled>Easy</option>
+                        <option value="" disabled>Medium</option>
+                        <option value="" selected>Hard</option>
+                    </select>
+                    <br>
+                    <h2>Volume:</h2>
+                    <div class="slidecontainer">
+                        <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+                        <p>Value: <span id="demo"></span></p>
+                    </div>
+                    <br>
+                    <br><h3>Tips:</h3>
+                    <p>Use your back to defend yourself from the bears</p>
+                    <p>Feed your family or you will lose</p>
+                    <p>The more food you have with you, the faster the bears will chase you</p>
+                </div>
             </div>
         </div>
         <canvas id="canvas"></canvas>

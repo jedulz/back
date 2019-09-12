@@ -1,10 +1,15 @@
 *{
     margin: 0px;
     overflow: hidden;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 body,html{
     background-color: #eee;
     height: 100%;
+}
+.game-title{
+    font-size: 50px;
+    margin-bottom: 30px;
 }
 canvas{
     touch-action: none;
@@ -39,3 +44,74 @@ canvas{
     background-color: #555;
     color:#eee;
 }
+
+.container{
+    text-align: center;
+    margin: auto;
+    width:20%;
+}
+.controls{
+    width:20%;
+    border: 1px solid black;
+    text-align: center;
+    margin: auto;
+}
+
+
+/*
+Slider CSS
+*/
+.slidecontainer {
+    text-align: center;
+    width: 100%;
+  }
+  
+  .slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 25px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  }
+  
+  .slider:hover {
+    opacity: 1;
+  }
+  
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+  }
+  
+  .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+  }
+
+  select {
+    /* General styling */
+    height: 30px;
+    width: 100px;
+    border-radius: 0;
+    padding-left: 10px;
+  
+    /* Removes the default <select> styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  
+    /* Positions background arrow image */
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAh0lEQVQ4T93TMQrCUAzG8V9x8QziiYSuXdzFC7h4AcELOPQAdXYovZCHEATlgQV5GFTe1ozJlz/kS1IpjKqw3wQBVyy++JI0y1GTe7DCBbMAckeNIQKk/BanALBB+16LtnDELoMcsM/BESDlz2heDR3WePwKSLo5eoxz3z6NNcFD+vu3ij14Aqz/DxGbKB7CAAAAAElFTkSuQmCC');
+    background-repeat: no-repeat;
+    background-position: 75px center;
+  }
+  
