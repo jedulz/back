@@ -299,6 +299,7 @@ function update(dt){
 
     //check gameover state
     if(player.health <= 0 || player.hunger <= 0){
+        console.log('gameover');
         gameover();
     }
 }
@@ -373,7 +374,7 @@ function animate(){
 //finish loading everything and then start our game
 window.onload = function(){
     player = new Player();
-    animationId = animate();
+    animationId = requestAnimationFrame(animate);
     
     //since this is on load we only have one setinterval which makes this object creation not bad
     //maybe we use delta time in the update function to create these objects
