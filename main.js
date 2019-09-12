@@ -1,17 +1,23 @@
+
+//globals non-constants variables
 let canvas,
     player,
     ctx,
     foodArray = [],
     enemyArray = [],
     familyArray = [],
-    lastUpdate = Date.now();
+    lastUpdate = Date.now(),
+    animationId;
 
+
+//sprites
 var porcupine = new Image();
 porcupine.src = "porcupine.png";
 
 var bush = new Image();
 bush.src = "bush.png";
 
+//canvas intialization
 canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -59,7 +65,7 @@ class Player{
     }
 
     draw(){
-        //we need to draw player stats
+        //draw player stats
         ctx.font = "30px Arial";
         
         let hearts = '';
@@ -73,39 +79,19 @@ class Player{
         ctx.fillText(hearts, 10, 50);
         ctx.fillText(grapes, 10, 100);
 
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.strokeStyle = 'red';
-        ctx.stroke();
-
-
         if(this.right){
-            //context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
             ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
-            // ctx.rect(this.x - this.spikeSize, this.y, this.spikeSize, this.height);
-            // ctx.strokeStyle = 'green';
-            // ctx.stroke();
         }
         else if(this.left){
-            //context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
             ctx.drawImage(porcupine, 256, 0, 512, 256, this.x-this.width-10, this.y-this.height+5, this.width*6, this.height*3);
-            // ctx.rect(this.x + this.width, this.y, this.spikeSize, this.height);
-            // ctx.strokeStyle = 'green';
-            // ctx.stroke();
         }
-        // else{
-        //     ctx.rect(this.x, this.y, this.width, -this.spikeSize);
-        //     ctx.rect(this.x - this.spikeSize, this.y, this.spikeSize, this.height);
-        //     ctx.rect(this.x + this.width, this.y, this.spikeSize, this.height);
-        //     ctx.strokeStyle = 'green';
-        //     ctx.stroke();
-        // }
-
     }
 
     update(){
         //drop hunger by one
         this.hunger-= 0.05;
+
+        //if not on ground
         if(this.y + this.height < ground){
             this.dy += gravity;
             this.y += this.dy;
@@ -113,12 +99,16 @@ class Player{
         if(this.jumped){
             this.y += this.dy;
         }
+        //if below ground and not in burrow
         if(this.y + this.height > ground && !this.inBurrow){
             this.jumped = false;
             // to not get stuck in the ground
             this.y = ground - this.height;
         }
+
+        //move in the direction of the keydown
         this.x += this.dx;
+
 
         // keep within the canvas
         if (this.x < 0){
@@ -128,11 +118,13 @@ class Player{
           this.x = canvas.width - this.width;
         }
 
+
         //check to see if in burrow
         if(this.inBurrow){
             this.y = familyAttrs.y;
         }
     }
+
     jump(){
         if(!this.inBurrow){
             this.dy = -10;
@@ -143,6 +135,7 @@ class Player{
             this.y = ground;
         }
     }
+
     fall(){
       // can only fall when rising
       if (this.dy < 0 && !this.inBurrow){
@@ -189,10 +182,6 @@ class Food{
         this.radius = radius;
     }
     draw(){
-        // ctx.beginPath();
-        // ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        // ctx.fillStyle = 'purple';
-        // ctx.fill();
         ctx.fillText('🍓', this.x, this.y);
     }
 }
@@ -212,10 +201,6 @@ class Family{
     }
 
     draw(){
-        // ctx.beginPath();
-        // ctx.rect(this.x, this.y, this.width, this.height);
-        // ctx.fillStyle = 'green';
-        // ctx.fill();
         if(this.right){
             ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
         }
@@ -231,7 +216,8 @@ class Family{
         }else{
             this.dx = 3;
         }
-
+        
+        //go back and forth in the burrow
         if(this.x + this.width > canvas.width){
             this.right = false;
             this.left = true;
@@ -239,6 +225,7 @@ class Family{
             this.right = true;
             this.left = false;
         }
+
         this.x += this.dx;
     }
 }
@@ -257,7 +244,7 @@ function hitDot(mouse, dot){
     }
 }
 
-//this function shouldnt return true or false but return the side the collision happened
+//checks if the player hit the enemy
 function hitEnemy(sq1, sq2){
     if(sq1.y < sq2.y + sq2.height &&//check square 1 top
         sq1.y + sq1.height > sq2.y&&//check square 1 bottom
@@ -271,7 +258,9 @@ function hitEnemy(sq1, sq2){
     }
 }
 
+
 function update(dt){
+
     //player updates to use delta time
     if(player.moveRight){
         player.x += 1/2 * dt;
@@ -283,6 +272,8 @@ function update(dt){
         player.dx = 0;
     }
     player.update();
+
+
     //check if hit food
     for (let i = 0; i < foodArray.length; i++) {
         if(hitDot(player, foodArray[i])){
@@ -291,11 +282,12 @@ function update(dt){
         }
     }
 
-    //draw family
+    //update family
     for (let i = 0; i < familyArray.length; i++) {
         familyArray[i].update();
     }
-
+    
+    //update enemyArray
     for (let i = 0; i < enemyArray.length; i++) {
         enemyArray[i].update();
 
@@ -306,11 +298,15 @@ function update(dt){
     }
 
     //check gameover state
-
+    if(player.health <= 0 || player.hunger <= 0){
+        
+    }
 }
 
+//draw everything
 function render(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
+
     //draw foodarea
     ctx.closePath();
     ctx.beginPath();
@@ -357,6 +353,7 @@ function render(){
     }
 }
 
+//this is what handles the game loop
 function animate(){
     let now = Date.now();
     let dt = now - lastUpdate;
@@ -364,7 +361,8 @@ function animate(){
 
     update(dt);
     render(dt);
-    requestAnimationFrame(animate);
+    let animationId = requestAnimationFrame(animate);
+    console.log('animationId', animationId);
 }
 
 //finish loading everything and then start our game
@@ -415,6 +413,7 @@ document.addEventListener('keydown', (e)=>{
         player.moveDown();
     }
 });
+
 document.addEventListener('keyup', (e)=>{
     if(e.keyCode == 39){//right
         player.moveRight = false;
@@ -427,31 +426,3 @@ document.addEventListener('keyup', (e)=>{
     }
 });
 
-
-
-/*
-Thoughts on this game.
-
-What if made a game about a porcupine.
-
-I wanted my back game to be more intuitive with how it relates to the theme.
-
-
-
-
-Ideas: In this game you move forward and have to turn around to take out your enemies
-The enemies are things that want to eat you maybe?
-Where are we going:
-Searching for food and water, then trying to get back home.
-Randomly generate levels
-Counter for how much food we need for the day. like 0/5 for the day
-once you get enough food you wont be hungry tonight
-if you go to sleep with out food for the day you lose a heart?
-the goal is to get hearts and mature them find a mate?
-
-name for the game. maybe name based on the goal like:
-find your other half
-Maybe a character name
-
-
-*/
