@@ -285,6 +285,9 @@ function update(dt){
     //update family
     for (let i = 0; i < familyArray.length; i++) {
         familyArray[i].update();
+        if(familyArray[i].hunger <= 0){
+            gameover();
+        }
     }
     
     //update enemyArray
@@ -299,11 +302,6 @@ function update(dt){
 
     //check gameover state
     if(player.health <= 0 || player.hunger <= 0){
-        console.log('gameover');
-        //draw one last time
-       ctx.font = "50px Arial bold";
-       ctx.fillStyle = 'white';
-       ctx.fillText('GAME OVER, YOU LOSE', canvas.width/3, canvas.height/2.5);
         gameover();
     }
 }
