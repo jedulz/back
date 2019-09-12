@@ -298,8 +298,10 @@ function update(dt){
     }
 
     //check gameover state
-    if(player.health <= 0 || player.hunger <= 0){
+    if(player.health <= 5 || player.hunger <= 0){
         console.log('gameover');
+        //draw one last time
+        render();
         gameover();
     }
 }
@@ -307,6 +309,13 @@ function update(dt){
 //draw everything
 function render(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
+
+    if(!continueAnimation){
+       ctx.font = "50px Arial bold";
+       ctx.fillStyle = 'white';
+       ctx.fillText('GAME OVER, YOU LOSE', canvas.width/3, canvas.height/2.5);
+       ctx.fill(); 
+    }
 
     //draw foodarea
     ctx.closePath();
