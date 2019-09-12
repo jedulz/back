@@ -7,7 +7,7 @@ let canvas,
     enemyArray = [],
     familyArray = [],
     lastUpdate = Date.now(),
-    animationId;
+    continueAnimation = false;
 
 
 //sprites
@@ -356,25 +356,31 @@ function render(){
 
 
 function gameover(){
-    cancelAnimationFrame(animationId);
+    continueAnimation = false;
 }
 
 
 //this is what handles the game loop
 function animate(){
-    let now = Date.now();
-    let dt = now - lastUpdate;
-    lastUpdate = now;
+    if(continueAnimation){
+        let now = Date.now();
+        let dt = now - lastUpdate;
+        lastUpdate = now;
 
-    update(dt);
-    render(dt);
-    animationId = requestAnimationFrame(animate);
+        update(dt);
+        render(dt);
+        requestAnimationFrame(animate);
+    }
 }
 
 //finish loading everything and then start our game
 window.onload = function(){
     player = new Player();
-    animationId = requestAnimationFrame(animate);
+    
+    //set gameloop condition to true
+    continueAnimation = true;
+
+    requestAnimationFrame(animate);
     
     //since this is on load we only have one setinterval which makes this object creation not bad
     //maybe we use delta time in the update function to create these objects
