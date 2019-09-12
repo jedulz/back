@@ -298,10 +298,12 @@ function update(dt){
     }
 
     //check gameover state
-    if(player.health <= 5 || player.hunger <= 0){
+    if(player.health <= 4 || player.hunger <= 0){
         console.log('gameover');
         //draw one last time
-        render();
+       ctx.font = "50px Arial bold";
+       ctx.fillStyle = 'white';
+       ctx.fillText('GAME OVER, YOU LOSE', canvas.width/3, canvas.height/2.5);
         gameover();
     }
 }
@@ -314,8 +316,8 @@ function render(){
        ctx.font = "50px Arial bold";
        ctx.fillStyle = 'white';
        ctx.fillText('GAME OVER, YOU LOSE', canvas.width/3, canvas.height/2.5);
-       ctx.fill(); 
-    }
+       
+    }else{
 
     //draw foodarea
     ctx.closePath();
@@ -360,6 +362,7 @@ function render(){
     //draw family
     for (let i = 0; i < familyArray.length; i++) {
         familyArray[i].draw();
+    }
     }
 }
 
