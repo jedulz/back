@@ -12,12 +12,19 @@ porcupine.src = "porcupine.png";
 var bush = new Image();
 bush.src = "bush.png";
 
+var bear = new Image();
+bear.src = "bear.png";
+
+var music = new Audio("music.mp3");
+music.play();
+
 canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 ctx = canvas.getContext("2d");
 
-//globals
+//global constants
+let gameStarted = false;
 const gravity = 0.8;
 const ground = canvas.height/1.3;//use this for the land above the burrow
 const bearSpeed = 5;
@@ -44,7 +51,7 @@ class Player{
         this.width = 50;
         this.height = 50;
         this.x = 100;
-        this.y = canvas.height - this.height;
+        this.y = familyAttrs.y;
         this.dx = 0;
         this.dy = 0;
         this.moveRight = false;
@@ -55,23 +62,25 @@ class Player{
         this.spikeSize = 30;
         this.health = 5;
         this.hunger = 100;
-        this.inBurrow = false;
+        this.inBurrow = true;
+        this.backDamage = 10;
+        this.spikeDamage = 5;
     }
 
     draw(){
         //we need to draw player stats
         ctx.font = "30px Arial";
         
-        let hearts = '';
-        let grapes = '';
+        let hearts = 'Health: ';
+        let berries = 'Food: ';
         for(let i = 0; i < this.health; i++){
             hearts += '❤️';
         }        
         for(let i = 0; i < this.hunger/10; i++){
-            grapes += '🍓';
+            berries += '🍓';
         }
         ctx.fillText(hearts, 10, 50);
-        ctx.fillText(grapes, 10, 100);
+        ctx.fillText(berries, 10, 100);
 
         ctx.beginPath();
         ctx.rect(this.x, this.y, this.width, this.height);
@@ -138,7 +147,6 @@ class Player{
             this.dy = -10;
             this.jumped = true;
         }else if(this.x > burrowOpening.x && this.x < burrowOpening.x + burrowOpening.width && this.inBurrow){
-            console.log('going to ground');
             this.inBurrow = false;
             this.y = ground;
         }
@@ -167,18 +175,28 @@ class Enemy{
         this.y = ground - this.height;
         this.dx = dx;
         this.dy = 0;
+        this.hunger = 2;
     }
 
     draw(){
-        ctx.beginPath();
-        ctx.rect(this.x,this.y,this.width,this.height);
-        ctx.fillStyle = 'black';
-        ctx.strokeStyle = 'blue';
-        ctx.fill();
+        if(this.dx > 0){
+            ctx.drawImage(bear, 272, 0, 544, 272, this.x-50, this.y, this.width*4, this.height);
+        }
+        else{
+            ctx.drawImage(bear, 0, 0, 272, 272, this.x-50, this.y, this.width*2, this.height);
+        }
     }
 
     update(){
         this.x += this.dx;
+        if(this.hunger != 0){
+            for (let i = 0; i < foodArray.length; i++) {
+                if(hitDot(this, foodArray[i])){
+                    this.hunger--;
+                    foodArray.splice(i, 1);
+                }
+            }
+        }
     }
 }
 
@@ -189,26 +207,25 @@ class Food{
         this.radius = radius;
     }
     draw(){
-        // ctx.beginPath();
-        // ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        // ctx.fillStyle = 'purple';
-        // ctx.fill();
-        ctx.fillText('🍓', this.x, this.y);
+        ctx.fillText('🍓', this.x-this.radius, this.y+this.radius);
     }
 }
 
 class Family{
-    constructor(){
+    constructor(x,y,dx){
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
         this.width = familyAttrs.width;
         this.height = familyAttrs.height;
-        this.dx = 0;
         this.dy = 0;
-        this.x = canvas.width/1.2;
-        this.y = familyAttrs.y;
         this.hunger = 100;
         this.health = 1;
         this.right = true;
         this.left = false;
+        if(this.dx == 0){
+            this.dx++;
+        }
     }
 
     draw(){
@@ -216,30 +233,29 @@ class Family{
         // ctx.rect(this.x, this.y, this.width, this.height);
         // ctx.fillStyle = 'green';
         // ctx.fill();
-        if(this.right){
+        if(this.dx > 0){
             ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
         }
-        else if(this.left){
+        else{
             ctx.drawImage(porcupine, 256, 0, 512, 256, this.x-this.width-10, this.y-this.height+5, this.width*6, this.height*3);
         }
+        //draw hunger
+        let berries = '';
+        for(let i = 0; i < this.hunger/10; i++){
+            berries += '🍓';
+        }
+        ctx.font = "12px Arial";
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'left';
+        ctx.fillText(berries, this.x, this.y);
     }
 
     update(){
-        //move left to right
-        if(this.left){
-            this.dx = -3;
-        }else{
-            this.dx = 3;
-        }
-
-        if(this.x + this.width > canvas.width){
-            this.right = false;
-            this.left = true;
-        }else if(this.x < 30){
-            this.right = true;
-            this.left = false;
+        if(this.x + this.width > canvas.width || this.x < 30){
+            this.dx *= -1;
         }
         this.x += this.dx;
+        this.hunger -= 0.1;
     }
 }
 
@@ -293,6 +309,10 @@ function update(dt){
 
     //draw family
     for (let i = 0; i < familyArray.length; i++) {
+        //check if player collides
+        // if( ){
+
+        // }
         familyArray[i].update();
     }
 
@@ -367,8 +387,10 @@ function animate(){
     requestAnimationFrame(animate);
 }
 
-//finish loading everything and then start our game
-window.onload = function(){
+function start(){
+    
+    document.getElementById('start_screen').style.display = 'none';
+    document.getElementById('canvas').style.display = 'block';
     player = new Player();
     animate();
     //since this is on load we only have one setinterval which makes this object creation not bad
@@ -383,21 +405,22 @@ window.onload = function(){
         //also add enemies, maybe a different interval
         //we need to check where the player is
         //get random position for either side of the screen
-        if(enemyArray.length < 2){
+        if(enemyArray.length < 1){
             if(randomInt(0,1) == 0){
                 enemyArray.push(new Enemy(randomInt(leftBounds, 0), 5));
             }else{
-                console.log('in this');
-
                 enemyArray.push(new Enemy(randomInt(canvas.width, rightBounds), -5));
             }
         }
-    }, 1000);
+    }, 2000);
 
-    familyArray.push(new Family());
-};
+    familyArray.push(new Family(randomInt(30, canvas.width-10), familyAttrs.y, randomInt(-5,-3)));
+    familyArray.push(new Family(randomInt(30, canvas.width-10), familyAttrs.y, randomInt(3,5))); 
+}
 
 document.addEventListener('keydown', (e)=>{
+    console.log(e.keyCode);
+    
     if(e.keyCode == 39){//right
         player.moveRight = true;
         player.right = true;
@@ -411,10 +434,15 @@ document.addEventListener('keydown', (e)=>{
     if(e.keyCode == 38 && player.jumped == false){//up
         player.jump();
     }
-    if(e.keyCode == 40 && player.jumped == false){//up
+    if(e.keyCode == 40 && player.jumped == false){//down
         player.moveDown();
     }
+    if(e.keyCode == 32 || e.keyCode == 13 && gameStarted == false){
+        gameStarted = true;
+        start();
+    }
 });
+
 document.addEventListener('keyup', (e)=>{
     if(e.keyCode == 39){//right
         player.moveRight = false;
@@ -424,6 +452,13 @@ document.addEventListener('keyup', (e)=>{
     }
     if(e.keyCode == 38){//up
       player.fall();
+    }
+});
+
+document.getElementById('start_button').addEventListener('click', ()=>{
+    if(gameStarted == false){
+        gameStarted = true;
+        start();
     }
 });
 
@@ -439,13 +474,13 @@ I wanted my back game to be more intuitive with how it relates to the theme.
 
 
 
-Ideas: In this game you move forward and have to turn around to take out your enemies
-The enemies are things that want to eat you maybe?
-Where are we going:
-Searching for food and water, then trying to get back home.
+//Ideas: In this game you move forward and have to turn around to take out your enemies
+//The enemies are things that want to eat you maybe?
+//Where are we going:
+//Searching for food and water, then trying to get back home.
 Randomly generate levels
-Counter for how much food we need for the day. like 0/5 for the day
-once you get enough food you wont be hungry tonight
+//Counter for how much food we need for the day. like 0/5 for the day
+//once you get enough food you wont be hungry tonight
 if you go to sleep with out food for the day you lose a heart?
 the goal is to get hearts and mature them find a mate?
 
