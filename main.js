@@ -1,23 +1,32 @@
+
+//globals non-constants variables
 let canvas,
     player,
     ctx,
     foodArray = [],
     enemyArray = [],
     familyArray = [],
-    lastUpdate = Date.now();
+    lastUpdate = Date.now(),
+    continueAnimation = false;
 
+
+//sprites
 var porcupine = new Image();
 porcupine.src = "porcupine.png";
 
 var bush = new Image();
 bush.src = "bush.png";
 
+<<<<<<< HEAD
 var bear = new Image();
 bear.src = "bear.png";
 
 var music = new Audio("music.mp3");
 music.play();
 
+=======
+//canvas intialization
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
 canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -68,7 +77,7 @@ class Player{
     }
 
     draw(){
-        //we need to draw player stats
+        //draw player stats
         ctx.font = "30px Arial";
         
         let hearts = 'Health: ';
@@ -82,39 +91,19 @@ class Player{
         ctx.fillText(hearts, 10, 50);
         ctx.fillText(berries, 10, 100);
 
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, this.width, this.height);
-        ctx.strokeStyle = 'red';
-        ctx.stroke();
-
-
         if(this.right){
-            //context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
             ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
-            // ctx.rect(this.x - this.spikeSize, this.y, this.spikeSize, this.height);
-            // ctx.strokeStyle = 'green';
-            // ctx.stroke();
         }
         else if(this.left){
-            //context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
             ctx.drawImage(porcupine, 256, 0, 512, 256, this.x-this.width-10, this.y-this.height+5, this.width*6, this.height*3);
-            // ctx.rect(this.x + this.width, this.y, this.spikeSize, this.height);
-            // ctx.strokeStyle = 'green';
-            // ctx.stroke();
         }
-        // else{
-        //     ctx.rect(this.x, this.y, this.width, -this.spikeSize);
-        //     ctx.rect(this.x - this.spikeSize, this.y, this.spikeSize, this.height);
-        //     ctx.rect(this.x + this.width, this.y, this.spikeSize, this.height);
-        //     ctx.strokeStyle = 'green';
-        //     ctx.stroke();
-        // }
-
     }
 
     update(){
         //drop hunger by one
         this.hunger-= 0.05;
+
+        //if not on ground
         if(this.y + this.height < ground){
             this.dy += gravity;
             this.y += this.dy;
@@ -122,12 +111,16 @@ class Player{
         if(this.jumped){
             this.y += this.dy;
         }
+        //if below ground and not in burrow
         if(this.y + this.height > ground && !this.inBurrow){
             this.jumped = false;
             // to not get stuck in the ground
             this.y = ground - this.height;
         }
+
+        //move in the direction of the keydown
         this.x += this.dx;
+
 
         // keep within the canvas
         if (this.x < 0){
@@ -137,11 +130,13 @@ class Player{
           this.x = canvas.width - this.width;
         }
 
+
         //check to see if in burrow
         if(this.inBurrow){
             this.y = familyAttrs.y;
         }
     }
+
     jump(){
         if(!this.inBurrow){
             this.dy = -10;
@@ -151,6 +146,7 @@ class Player{
             this.y = ground;
         }
     }
+
     fall(){
       // can only fall when rising
       if (this.dy < 0 && !this.inBurrow){
@@ -207,7 +203,11 @@ class Food{
         this.radius = radius;
     }
     draw(){
+<<<<<<< HEAD
         ctx.fillText('🍓', this.x-this.radius, this.y+this.radius);
+=======
+        ctx.fillText('🍓', this.x, this.y);
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
     }
 }
 
@@ -229,11 +229,15 @@ class Family{
     }
 
     draw(){
+<<<<<<< HEAD
         // ctx.beginPath();
         // ctx.rect(this.x, this.y, this.width, this.height);
         // ctx.fillStyle = 'green';
         // ctx.fill();
         if(this.dx > 0){
+=======
+        if(this.right){
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
             ctx.drawImage(porcupine,0, 0, 256, 256, this.x-this.width+10, this.y-this.height+5,this.width*3,this.height*3);
         }
         else{
@@ -251,9 +255,27 @@ class Family{
     }
 
     update(){
+<<<<<<< HEAD
         if(this.x + this.width > canvas.width || this.x < 30){
             this.dx *= -1;
+=======
+        //move left to right
+        if(this.left){
+            this.dx = -3;
+        }else{
+            this.dx = 3;
         }
+        
+        //go back and forth in the burrow
+        if(this.x + this.width > canvas.width){
+            this.right = false;
+            this.left = true;
+        }else if(this.x < 30){
+            this.right = true;
+            this.left = false;
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
+        }
+
         this.x += this.dx;
         this.hunger -= 0.1;
     }
@@ -273,7 +295,7 @@ function hitDot(mouse, dot){
     }
 }
 
-//this function shouldnt return true or false but return the side the collision happened
+//checks if the player hit the enemy
 function hitEnemy(sq1, sq2){
     if(sq1.y < sq2.y + sq2.height &&//check square 1 top
         sq1.y + sq1.height > sq2.y&&//check square 1 bottom
@@ -287,7 +309,9 @@ function hitEnemy(sq1, sq2){
     }
 }
 
+
 function update(dt){
+
     //player updates to use delta time
     if(player.moveRight){
         player.x += 1/2 * dt;
@@ -299,6 +323,8 @@ function update(dt){
         player.dx = 0;
     }
     player.update();
+
+
     //check if hit food
     for (let i = 0; i < foodArray.length; i++) {
         if(hitDot(player, foodArray[i])){
@@ -307,15 +333,19 @@ function update(dt){
         }
     }
 
-    //draw family
+    //update family
     for (let i = 0; i < familyArray.length; i++) {
         //check if player collides
         // if( ){
 
         // }
         familyArray[i].update();
+        if(familyArray[i].hunger <= 0){
+            gameover();
+        }
     }
-
+    
+    //update enemyArray
     for (let i = 0; i < enemyArray.length; i++) {
         enemyArray[i].update();
 
@@ -326,11 +356,22 @@ function update(dt){
     }
 
     //check gameover state
-
+    if(player.health <= 0 || player.hunger <= 0){
+        gameover();
+    }
 }
 
+//draw everything
 function render(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
+
+    if(!continueAnimation){
+       ctx.font = "50px Arial bold";
+       ctx.fillStyle = 'white';
+       ctx.fillText('GAME OVER, YOU LOSE', canvas.width/3, canvas.height/2.5);
+       
+    }else{
+
     //draw foodarea
     ctx.closePath();
     ctx.beginPath();
@@ -375,16 +416,26 @@ function render(){
     for (let i = 0; i < familyArray.length; i++) {
         familyArray[i].draw();
     }
+    }
 }
 
-function animate(){
-    let now = Date.now();
-    let dt = now - lastUpdate;
-    lastUpdate = now;
 
-    update(dt);
-    render(dt);
-    requestAnimationFrame(animate);
+function gameover(){
+    continueAnimation = false;
+}
+
+
+//this is what handles the game loop
+function animate(){
+    if(continueAnimation){
+        let now = Date.now();
+        let dt = now - lastUpdate;
+        lastUpdate = now;
+
+        update(dt);
+        render(dt);
+        requestAnimationFrame(animate);
+    }
 }
 
 function start(){
@@ -392,7 +443,12 @@ function start(){
     document.getElementById('start_screen').style.display = 'none';
     document.getElementById('canvas').style.display = 'block';
     player = new Player();
-    animate();
+    
+    //set gameloop condition to true
+    continueAnimation = true;
+
+    requestAnimationFrame(animate);
+    
     //since this is on load we only have one setinterval which makes this object creation not bad
     //maybe we use delta time in the update function to create these objects
     setInterval(()=>{
@@ -455,6 +511,7 @@ document.addEventListener('keyup', (e)=>{
     }
 });
 
+<<<<<<< HEAD
 document.getElementById('start_button').addEventListener('click', ()=>{
     if(gameStarted == false){
         gameStarted = true;
@@ -490,3 +547,5 @@ Maybe a character name
 
 
 */
+=======
+>>>>>>> d3281549e12b7324dd24aabb77eb2429bdfbcbd2
