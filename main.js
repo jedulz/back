@@ -298,7 +298,7 @@ function update(dt){
     }
 
     //check gameover state
-    if(player.health <= 4 || player.hunger <= 0){
+    if(player.health <= 0 || player.hunger <= 0){
         console.log('gameover');
         //draw one last time
        ctx.font = "50px Arial bold";
