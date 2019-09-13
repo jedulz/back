@@ -26,7 +26,15 @@ var bear = new Image();
 bear.src = "bear.png";
 
 var music = new Audio("explosion.mp3");
-music.play();
+
+/* Slider info */
+var slider = document.getElementById("myRange");
+var output = document.getElementById("demo");
+output.innerHTML = slider.value;
+
+slider.oninput = function() {
+  output.innerHTML = this.value;
+}
 
 canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
@@ -38,8 +46,8 @@ let gameStarted = false;
 const gravity = 0.8;
 const ground = canvas.height/1.3;//use this for the land above the burrow
 const bearSpeed = 5;
-const leftBounds = -1000;
-const rightBounds = canvas.width + 1000;
+const leftBounds = -100;
+const rightBounds = canvas.width + 100;
 const ballRadius = 10;
 const burrowOpening = {
     x: 100,
@@ -230,9 +238,15 @@ class Enemy{
         this.x += this.dx;
 
         //increase speed in relation to how much food the player is holding
+        let temp = this.dx;
         this.dx = 0;
         for (let i = 0; i < player.food; i++) {
-            this.dx += 1;
+            if(temp > 0){
+                this.dx += 1;
+            }else{
+                this.dx -= 1;
+            }
+            
         }
 
         if(this.food != 0){
@@ -420,21 +434,32 @@ function update(dt){
         enemyArray[i].update();
 
         //if enemy is out of bounds
-        if(hitEnemy(player, enemyArray[i]) || enemyArray[i].x > rightBounds || enemyArray[i].x < leftBounds){
+        if(hitEnemy(player, enemyArray[i]) || enemyArray[i].x > rightBounds*2 || enemyArray[i].x < leftBounds*1.2){
             enemyArray.splice(i, 1);
         }
     }
 
     //update bulletArray
     for (let i = 0; i < bulletArray.length; i++) {
+
         bulletArray[i].update();
 
-        //if out of bounds;
-        if(bulletArray[i].x > canvas.width || bulletArray[i].x < 0){
-            bulletArray.splice(i, 1);
+        //if hit enemy
+        for (let j = 0; j < enemyArray.length; j++){
+            //if enemy is out of bounds
+            if(hitSquare(bulletArray[i], enemyArray[j])){
+                bulletArray.splice(i,1);
+                enemyArray.splice(j, 1);
+                //issue with sq1 not defined because loop just has length of 2
+                //maybe we just break the loop to fix this bug for now                
+                break;
+            }
         }
 
-        //if hit enemy
+        if(bulletArray[i] < 0 || bulletArray[i] > canvas.width){
+
+        }
+        
     }
 
     //check gameover state
@@ -519,66 +544,48 @@ function render(){
 
 function gameover(){
     continueAnimation = false;
+    
+    
 }
 
 
 //this is what handles the game loop
 function animate(){
     if(continueAnimation){
+        
         let now = Date.now();
         let dt = now - lastUpdate;
         lastUpdate = now;
 
         update(dt);
         render(dt);
-        requestAnimationFrame(animate);
+        
     }
+
+    //hoping this fixes the reset bug for now
+    requestAnimationFrame(animate);
 }
 
-function start(){
-    
-    document.getElementById('start_screen').style.display = 'none';
-    document.getElementById('canvas').style.display = 'block';
-    player = new Player();
-    
-    //set gameloop condition to true
-    continueAnimation = true;
-
-    animationId = requestAnimationFrame(animate);
-    
-    //since this is on load we only have one setinterval which makes this object creation not bad
-    //maybe we use delta time in the update function to create these objects
-    foodInterval = setInterval(()=>{
-        if(foodArray.length < 15){
-            foodArray.push(new Food(randomInt(canvas.width/2, canvas.width/1.35), randomInt(ground-100,ground-20), ballRadius));
-        }
-    }, 500);
-
-    enemyInterval = setInterval(()=>{
-        //also add enemies, maybe a different interval
-        //we need to check where the player is
-        //get random position for either side of the screen
-        if(enemyArray.length < 10){
-            if(randomInt(0,1) == 0){
-                enemyArray.push(new Enemy(randomInt(leftBounds, 0), 5));
-            }else{
-                enemyArray.push(new Enemy(randomInt(canvas.width, rightBounds), -5));
-            }
-        }
-    }, 2500);
-
-    familyArray.push(new Family(randomInt(30, canvas.width-30), familyAttrs.y, randomInt(-10,-5)));
-    familyArray.push(new Family(randomInt(30, canvas.width-30), familyAttrs.y, randomInt(5,10))); 
-
-    //create stockpile obj on game start
-    stockPile = new StockPile();
-}
 
 function reset(){
+
+    if(!gameStarted){
+        gameStarted = true;
+        document.getElementById('start_screen').style.display = 'none';
+        document.getElementById('canvas').style.display = 'block';
+        requestAnimationFrame(animate);
+    }
+    
+
+    score = 0;
+
     player = new Player();
+    player.food = 10;
     
     //set gameloop condition to true
     continueAnimation = true;            
+    console.log(continueAnimation);
+    
     
     //clear intervals
     clearInterval(foodInterval);
@@ -587,6 +594,7 @@ function reset(){
     familyArray = [];
     enemyArray = [];
     foodArray = [];
+    bulletArray = [];
 
     foodInterval = setInterval(()=>{
         if(foodArray.length < 5){
@@ -599,13 +607,14 @@ function reset(){
         //we need to check where the player is
         //get random position for either side of the screen
         if(enemyArray.length < 10){
-            if(randomInt(0,1) == 0){
+            
+            if(randomInt(0,2) >= 1){
                 enemyArray.push(new Enemy(randomInt(leftBounds, 0), 5));
             }else{
-                enemyArray.push(new Enemy(randomInt(canvas.width, rightBounds), -5));
+                enemyArray.push(new Enemy(randomInt(canvas.width, canvas.width+10), -5));
             }
         }
-    }, 2500);
+    }, 2000);
 
     
 
@@ -634,12 +643,13 @@ document.addEventListener('keydown', (e)=>{
         player.moveDown();
     }
     if((e.keyCode == 32 || e.keyCode == 13) && gameStarted == false){
-        gameStarted = true;
-        start();
+        music.volume = slider.value/100;
+        reset();
     }
 
-    if(e.keyCode == 32 && gameStarted){
+    if(e.keyCode == 32 && gameStarted && continueAnimation){
         player.shoot();
+        music.play();
     }
 
     if(e.keyCode == 82){
@@ -663,16 +673,8 @@ document.addEventListener('keyup', (e)=>{
 
 document.getElementById('start_button').addEventListener('click', ()=>{
     if(gameStarted == false){
-        gameStarted = true;
-        start();
+        music.volume = slider.value/100;
+        reset();
     }
 });
 
-/* Slider info */
-var slider = document.getElementById("myRange");
-var output = document.getElementById("demo");
-output.innerHTML = slider.value;
-
-slider.oninput = function() {
-  output.innerHTML = this.value;
-}
