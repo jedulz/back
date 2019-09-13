@@ -6,9 +6,13 @@ let canvas,
     foodArray = [],
     enemyArray = [],
     familyArray = [],
+    bulletArray = [],
     lastUpdate = Date.now(),
     continueAnimation = false,
-    stockPile;
+    stockPile,
+    score = 0,
+    enemyInterval,
+    foodInterval;
 
 
 //sprites
@@ -21,7 +25,7 @@ bush.src = "bush.png";
 var bear = new Image();
 bear.src = "bear.png";
 
-var music = new Audio("music.mp3");
+var music = new Audio("explosion.mp3");
 music.play();
 
 canvas = document.getElementById("canvas");
@@ -67,7 +71,7 @@ class Player{
         this.jumped = false;
         this.spikeSize = 30;
         this.health = 5;
-        this.hunger = 100;
+        this.food = 10;
         this.inBurrow = true;
         this.backDamage = 10;
         this.spikeDamage = 5;
@@ -82,7 +86,7 @@ class Player{
         for(let i = 0; i < this.health; i++){
             hearts += '❤️';
         }        
-        for(let i = 0; i < this.hunger/10; i++){
+        for(let i = 0; i < this.food; i++){
             berries += '🍓';
         }
         ctx.fillText(hearts, 10, 50);
@@ -97,8 +101,9 @@ class Player{
     }
 
     update(){
-        //drop hunger by one
-        this.hunger-= 0.05;
+        
+        //drop food by one
+        this.food -= 0.01;
 
         //if not on ground
         if(this.y + this.height < ground){
@@ -132,6 +137,12 @@ class Player{
         if(this.inBurrow){
             this.y = familyAttrs.y;
         }
+
+        //if player is in stockpile
+        if(hitSquare(this, stockPile) && this.food > 10){
+            this.food--;
+            stockPile.food++;
+        }
     }
 
     jump(){
@@ -158,6 +169,41 @@ class Player{
         }
     }
 
+    shoot(){
+        let direction;
+        if(this.right){
+            direction = 'right';
+        }else{
+            direction = 'left';
+        }
+        bulletArray.push(new Bullet(this.x, this.y + this.height/2, direction));
+        this.food--;
+    }
+
+}
+
+class Bullet{
+    constructor(x,y, direction){
+        this.x = x;
+        this.y = y;
+        this.width = 10;
+        this.height = 10;
+        this.direction = direction;
+        this.dx = 0;
+    }
+    update(){
+        if(this.direction == 'right'){
+            this.dx = 10;
+        }else{
+            this.dx = -10;
+        }
+
+        this.x += this.dx;
+    }
+    draw(){
+        ctx.font = "30px Arial";
+        ctx.fillText('🍓', this.x, this.y);
+    }
 }
 
 class Enemy{
@@ -168,7 +214,7 @@ class Enemy{
         this.y = ground - this.height;
         this.dx = dx;
         this.dy = 0;
-        this.hunger = 2;
+        this.food = 2;
     }
 
     draw(){
@@ -185,14 +231,14 @@ class Enemy{
 
         //increase speed in relation to how much food the player is holding
         this.dx = 0;
-        for (let i = 0; i < player.hunger; i++) {
-            this.dx+=0.1;
+        for (let i = 0; i < player.food; i++) {
+            this.dx += 1;
         }
 
-        if(this.hunger != 0){
+        if(this.food != 0){
             for (let i = 0; i < foodArray.length; i++) {
                 if(hitDot(this, foodArray[i])){
-                    this.hunger--;
+                    this.food--;
                     foodArray.splice(i, 1);
                 }
             }
@@ -219,7 +265,7 @@ class Family{
         this.width = familyAttrs.width;
         this.height = familyAttrs.height;
         this.dy = 0;
-        this.hunger = 10;
+        this.food = 10;
         this.health = 1;
         this.right = true;
         this.left = false;
@@ -235,9 +281,9 @@ class Family{
         else{
             ctx.drawImage(porcupine, 256, 0, 512, 256, this.x-this.width-10, this.y-this.height+5, this.width*6, this.height*3);
         }
-        //draw hunger
+        //draw food
         let berries = '';
-        for(let i = 0; i < this.hunger; i++){
+        for(let i = 0; i < this.food; i++){
             berries += '🍓';
         }
         ctx.font = "12px Arial";
@@ -252,18 +298,18 @@ class Family{
         }
 
         this.x += this.dx;
-        this.hunger -= 0.01;
+        this.food -= 0.008;
 
-        //if the player hit the storage gives food
-        if(hitSquare(this, stockPile)){
+        //if the family hit the storage gives food
+        if(hitSquare(this, stockPile) && stockPile.food > 0 && this.food < 10){
             stockPile.food--;
-            this.hunger++;
+            this.food++;
             
         }
         if(this.x + this.width <= stockPile.x){
             //take one away from stockpile
             stockPile.food--;
-            this.hunger++;
+            this.food++;
             //add one food
 
         }
@@ -357,14 +403,14 @@ function update(dt){
     for (let i = 0; i < foodArray.length; i++) {
         if(hitDot(player, foodArray[i])){
             foodArray.splice(i, 1);
-            player.hunger+=10;
+            player.food+=1;
         }
     }
 
     //update family
     for (let i = 0; i < familyArray.length; i++) {
         familyArray[i].update();
-        if(familyArray[i].hunger <= 0){
+        if(familyArray[i].food <= 0){
             gameover();
         }
     }
@@ -379,10 +425,23 @@ function update(dt){
         }
     }
 
+    //update bulletArray
+    for (let i = 0; i < bulletArray.length; i++) {
+        bulletArray[i].update();
+
+        //if out of bounds;
+        if(bulletArray[i].x > canvas.width || bulletArray[i].x < 0){
+            bulletArray.splice(i, 1);
+        }
+
+        //if hit enemy
+    }
+
     //check gameover state
-    if(player.health <= 0 || player.hunger <= 0){
+    if(player.health <= 0 || player.food <= 0){
         gameover();
     }
+    score++;
 }
 
 //draw everything
@@ -393,8 +452,14 @@ function render(){
        ctx.font = "50px Arial bold";
        ctx.fillStyle = 'white';
        ctx.fillText('GAME OVER, YOU LOSE', canvas.width/3, canvas.height/2.5);
+       ctx.fillText('Score: ' + score, canvas.width/3, canvas.height/2);
+       ctx.fillText('Press r to restart', canvas.width/3, canvas.height/1.5);
        
     }else{
+        //draw score
+        ctx.font = "20px Arial bold";
+        ctx.fillStyle = 'black';
+        ctx.fillText('Score: ' + score, canvas.width-200, 50);
 
         //draw foodarea
         ctx.closePath();
@@ -441,6 +506,11 @@ function render(){
             familyArray[i].draw();
         }
 
+        //update enemyArray
+        for (let i = 0; i < bulletArray.length; i++) {
+            bulletArray[i].draw();
+        }
+
         //draw stockpile
         stockPile.draw();
     }
@@ -474,35 +544,76 @@ function start(){
     //set gameloop condition to true
     continueAnimation = true;
 
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
     
     //since this is on load we only have one setinterval which makes this object creation not bad
     //maybe we use delta time in the update function to create these objects
-    setInterval(()=>{
-        if(foodArray.length < 5){
+    foodInterval = setInterval(()=>{
+        if(foodArray.length < 15){
             foodArray.push(new Food(randomInt(canvas.width/2, canvas.width/1.35), randomInt(ground-100,ground-20), ballRadius));
         }
     }, 500);
 
-    setInterval(()=>{
+    enemyInterval = setInterval(()=>{
         //also add enemies, maybe a different interval
         //we need to check where the player is
         //get random position for either side of the screen
-        if(enemyArray.length < 1){
+        if(enemyArray.length < 10){
             if(randomInt(0,1) == 0){
                 enemyArray.push(new Enemy(randomInt(leftBounds, 0), 5));
             }else{
                 enemyArray.push(new Enemy(randomInt(canvas.width, rightBounds), -5));
             }
         }
-    }, 2000);
+    }, 2500);
 
-    familyArray.push(new Family(randomInt(30, canvas.width-10), familyAttrs.y, randomInt(-5,-3)));
-    familyArray.push(new Family(randomInt(30, canvas.width-10), familyAttrs.y, randomInt(3,5))); 
+    familyArray.push(new Family(randomInt(30, canvas.width-30), familyAttrs.y, randomInt(-10,-5)));
+    familyArray.push(new Family(randomInt(30, canvas.width-30), familyAttrs.y, randomInt(5,10))); 
 
     //create stockpile obj on game start
     stockPile = new StockPile();
+}
+
+function reset(){
+    player = new Player();
     
+    //set gameloop condition to true
+    continueAnimation = true;            
+    
+    //clear intervals
+    clearInterval(foodInterval);
+    clearInterval(enemyInterval);
+    //clear arrays
+    familyArray = [];
+    enemyArray = [];
+    foodArray = [];
+
+    foodInterval = setInterval(()=>{
+        if(foodArray.length < 5){
+            foodArray.push(new Food(randomInt(canvas.width/2, canvas.width/1.35), randomInt(ground-100,ground-20), ballRadius));
+        }
+    }, 500);
+
+    enemyInterval = setInterval(()=>{
+        //also add enemies, maybe a different interval
+        //we need to check where the player is
+        //get random position for either side of the screen
+        if(enemyArray.length < 10){
+            if(randomInt(0,1) == 0){
+                enemyArray.push(new Enemy(randomInt(leftBounds, 0), 5));
+            }else{
+                enemyArray.push(new Enemy(randomInt(canvas.width, rightBounds), -5));
+            }
+        }
+    }, 2500);
+
+    
+
+    familyArray.push(new Family(randomInt(30, canvas.width-30), familyAttrs.y, randomInt(-10,-5)));
+    familyArray.push(new Family(randomInt(30, canvas.width-30), familyAttrs.y, randomInt(5,10))); 
+
+    //create stockpile obj on game start
+    stockPile = new StockPile();
 }
 
 document.addEventListener('keydown', (e)=>{
@@ -526,6 +637,16 @@ document.addEventListener('keydown', (e)=>{
         gameStarted = true;
         start();
     }
+
+    if(e.keyCode == 32 && gameStarted){
+        player.shoot();
+    }
+
+    if(e.keyCode == 82){
+        reset();
+    }
+    
+
 });
 
 document.addEventListener('keyup', (e)=>{
