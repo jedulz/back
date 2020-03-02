@@ -4,7 +4,7 @@
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 body,html{
-    background-color: #eee;
+    background-color: #222;
     height: 100%;
 }
 .game-title{
@@ -17,7 +17,8 @@ canvas{
     background-color:#7EC0EE;
 }
 #start_screen{
-    background-color: #eee;
+    background-color: #222;
+    color:#ee3;
     height: 80%;
     position: relative;
   }
@@ -51,6 +52,7 @@ canvas{
     width:20%;
 }
 .controls{
+    display: none;
     width:20%;
     border: 1px solid black;
     text-align: center;
