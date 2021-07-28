@@ -82,20 +82,20 @@ document.getElementById('start_button').addEventListener('click', ()=>{
 
 
 document.addEventListener('keydown', (e)=>{
-    if(e.keyCode == 39){//right
+    if(e.keyCode == 39 || e.keyCode == 68){//right
         player.moveRight = true;
         player.right = true;
         player.left = false;
     }
-    if(e.keyCode == 37){//left
+    if(e.keyCode == 37 || e.keyCode == 65){//left
         player.moveLeft = true;
         player.right = false;
         player.left = true;
     }
-    if(e.keyCode == 38 && player.jumped == false){//up
+    if(e.keyCode == 87 || e.keyCode == 38 && player.jumped == false){//up
         player.jump();
     }
-    if(e.keyCode == 40 && player.jumped == false){//down
+    if(e.keyCode == 83 && player.jumped == false){//down
         player.moveDown();
     }
     if((e.keyCode == 32 || e.keyCode == 13) && gameStarted == false){
@@ -116,13 +116,13 @@ document.addEventListener('keydown', (e)=>{
 });
 
 document.addEventListener('keyup', (e)=>{
-    if(e.keyCode == 39){//right
+    if(e.keyCode == 39  || e.keyCode == 68){//right
         player.moveRight = false;
     }
-    if(e.keyCode == 37){//left
+    if(e.keyCode == 37  || e.keyCode == 65){//left
         player.moveLeft= false;
     }
-    if(e.keyCode == 38){//up
+    if( e.keyCode == 87 ||  e.keyCode == 38){//up
       player.fall();
     }
 });
